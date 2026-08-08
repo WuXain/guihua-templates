@@ -1,0 +1,30 @@
+name: Guihua template CI
+
+on:
+  push:
+    branches: [ main, master, 'codex/**' ]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  template:
+    name: template-${{ matrix.framework }}-${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        framework: [net8.0, net10.0]
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+      - name: Run release validation
+        shell: pwsh
+        run: ./eng/Test-GeneratedTemplate.ps1 -Frameworks ${{ matrix.framework }} -ArtifactsPath (Join-Path $env:GITHUB_WORKSPACE 'artifacts')

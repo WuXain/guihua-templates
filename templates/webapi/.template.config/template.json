@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json.schemastore.org/template",
+  "author": "Charles.Yu",
+  "classifications": [
+    "Web",
+    "Web API",
+    "ASP.NET Core",
+    "Modular"
+  ],
+  "identity": "Guihua.Templates.WebApi.CSharp",
+  "name": "YOU Web API Template",
+  "description": "A minimal controller-based ASP.NET Core Web API with explicit Api, Core, and Infrastructure boundaries.",
+  "shortName": "guihua",
+  "sourceName": "YOU",
+  "groupIdentity": "Guihua.Templates.WebApi",
+  "preferNameDirectory": true,
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  },
+  "sources": [
+    {
+      "modifiers": [
+        {
+          "exclude": [
+            "_rels/**",
+            "package/**",
+            "**/*Content_Types*.xml",
+            "**/*.nuspec",
+            "**/*.nupkg"
+          ]
+        }
+      ]
+    }
+  ],
+  "symbols": {
+    "framework": {
+      "type": "parameter",
+      "datatype": "choice",
+      "displayName": "Target framework",
+      "description": "The single target framework for the generated application.",
+      "choices": [
+        {
+          "choice": "net8.0",
+          "description": ".NET 8 (default compatibility channel)"
+        },
+        {
+          "choice": "net10.0",
+          "description": ".NET 10"
+        }
+      ],
+      "defaultValue": "net8.0",
+      "replaces": "__GUIHUA_TARGET_FRAMEWORK__"
+    },
+    "sdkVersion": {
+      "type": "generated",
+      "generator": "switch",
+      "replaces": "__GUIHUA_SDK_VERSION__",
+      "parameters": {
+        "evaluator": "C++",
+        "cases": [
+          {
+            "condition": "(framework == 'net8.0')",
+            "value": "8.0.423"
+          },
+          {
+        "condition": "(framework == 'net10.0')",
+            "value": "10.0.302"
+          }
+        ]
+      }
+    }
+  },
+  "primaryOutputs": [
+    {
+      "path": "YOU.sln"
+    }
+  ]
+}

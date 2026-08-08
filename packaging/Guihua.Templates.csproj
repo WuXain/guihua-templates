@@ -1,0 +1,47 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <IsPackable>true</IsPackable>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <PackageId>Guihua.Templates</PackageId>
+    <Version>1.0.0-beta.1</Version>
+    <Title>YOU / Guihua .NET Web API Templates</Title>
+    <PackageType>Template</PackageType>
+    <Authors>Charles.Yu</Authors>
+    <Copyright>Copyright © 2026 Charles.Yu</Copyright>
+    <Description>Three lightweight dotnet new templates for YOU Web APIs, explicit compile-time modules, and standalone tools. Generates net8.0 by default and supports net10.0 without adding database, Redis, authentication, or other external-service dependencies to the base application.</Description>
+    <PackageTags>dotnet-new;template;webapi;aspnetcore;net8;net10;modular;tooling</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageReleaseNotes>First public beta candidate. Includes guihua, guihua-module, and guihua-tool templates with net8.0/net10.0 generation and automated package validation.</PackageReleaseNotes>
+    <PackageProjectUrl>https://github.com/WuXain/guihua-templates</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/WuXain/guihua-templates.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+    <NoDefaultExcludes>true</NoDefaultExcludes>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="README.md"
+          Pack="true"
+          PackagePath="README.md" />
+    <!-- Keep the package boundary explicit: only the three public templates are packaged. -->
+    <None Include="..\templates\webapi\.template.config\template.json"
+          Pack="true"
+          PackagePath="webapi\.template.config\template.json" />
+    <None Include="..\templates\webapi\content\**\*"
+          Exclude="..\templates\webapi\content\**\artifacts\**;..\templates\webapi\content\**\bin\**;..\templates\webapi\content\**\obj\**;..\templates\webapi\content\**\docs\**;..\templates\webapi\content\**\v2\**;..\templates\webapi\content\**\*.nupkg"
+          Pack="true"
+          PackagePath="webapi\%(RecursiveDir)%(Filename)%(Extension)" />
+    <None Include="..\templates\module\**\*"
+          Exclude="..\templates\module\**\artifacts\**;..\templates\module\**\bin\**;..\templates\module\**\obj\**;..\templates\module\**\*.nupkg"
+          Pack="true"
+          PackagePath="module\%(RecursiveDir)%(Filename)%(Extension)" />
+    <None Include="..\templates\tool\**\*"
+          Exclude="..\templates\tool\**\artifacts\**;..\templates\tool\**\bin\**;..\templates\tool\**\obj\**;..\templates\tool\**\*.nupkg"
+          Pack="true"
+          PackagePath="tool\%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json.schemastore.org/template",
+  "author": "Charles.Yu",
+  "classifications": [
+    "Web",
+    "ASP.NET Core",
+    "Modular",
+    "Library"
+  ],
+  "identity": "Guihua.Templates.Module.CSharp",
+  "name": "Guihua Explicit Module",
+  "description": "Generates an explicit compile-time ASP.NET Core module and its xUnit test project. The module does not scan or rewrite the host.",
+  "shortName": "guihua-module",
+  "sourceName": "ModuleName",
+  "groupIdentity": "Guihua.Templates.Module",
+  "preferNameDirectory": true,
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  },
+  "primaryOutputs": [
+    {
+      "path": "ModuleName/ModuleName.csproj"
+    },
+    {
+      "path": "ModuleName.Tests/ModuleName.Tests.csproj"
+    }
+  ],
+  "postActions": [
+    {
+      "description": "Add the generated projects and explicit host registration.",
+      "manualInstructions": [
+        {
+          "text": "Open the generated README.md and run its dotnet sln add, host project reference, and composition-root steps. No host source is modified automatically."
+        }
+      ],
+      "actionId": "AC1156F7-BB77-4DB8-B28F-24EEBCCA1E5C",
+      "continueOnError": true
+    }
+  ]
+}

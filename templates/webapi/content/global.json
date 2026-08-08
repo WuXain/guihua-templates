@@ -1,0 +1,7 @@
+{
+  "sdk": {
+    "version": "__GUIHUA_SDK_VERSION__",
+    "rollForward": "latestFeature",
+    "allowPrerelease": false
+  }
+}

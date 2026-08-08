@@ -1,0 +1,33 @@
+# 忽略构建输出
+**/bin/
+**/obj/
+**/.vs/
+**/*.user
+**/*.suo
+
+# 忽略 NuGet 包
+*.nupkg
+*.snupkg
+
+# 忽略日志
+**/logs/
+**/*.log
+
+# 忽略临时文件
+**/.DS_Store
+**/Thumbs.db
+
+# 忽略 VS Code 配置
+.vscode/
+
+# 忽略 Rider 配置
+.idea/
+
+# 保留模板配置
+!.template.config/
+
+# v3 模板作者工作区产物
+artifacts/
+**/*.db
+**/*.db-shm
+**/*.db-wal
