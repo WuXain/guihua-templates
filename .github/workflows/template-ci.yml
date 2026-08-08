@@ -27,4 +27,7 @@ jobs:
             10.0.x
       - name: Run release validation
         shell: pwsh
-        run: ./eng/Test-GeneratedTemplate.ps1 -Frameworks ${{ matrix.framework }} -ArtifactsPath (Join-Path $env:GITHUB_WORKSPACE 'artifacts')
+        # Hosted Windows runners can keep short-lived handles open after generated
+        # processes exit. The runner workspace is disposable, so CI leaves its
+        # validation artifacts for runner teardown instead of making cleanup a gate.
+        run: ./eng/Test-GeneratedTemplate.ps1 -Frameworks ${{ matrix.framework }} -ArtifactsPath (Join-Path $env:GITHUB_WORKSPACE 'artifacts') -KeepArtifacts
