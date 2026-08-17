@@ -19,7 +19,7 @@ All templates are created from one package. The application and tool templates g
 This is a prerelease package, so install the exact version:
 
 ```powershell
-dotnet new install Guihua.Templates::1.0.0-beta.1
+dotnet new install Guihua.Templates::1.0.0-beta.2
 dotnet new list guihua
 ```
 

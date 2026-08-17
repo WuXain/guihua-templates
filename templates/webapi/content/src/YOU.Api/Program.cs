@@ -73,6 +73,7 @@ app.UseExceptionHandler(exceptionApp =>
 if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Testing"))
 {
     app.UseSwagger();
+    app.UseSwaggerUI();
     app.MapGet("/api/demo/exception", () =>
         ThrowDemoException());
 }
