@@ -29,6 +29,14 @@
             "**/*.nuspec",
             "**/*.nupkg"
           ]
+        },
+        {
+          "condition": "(persistence != 'freesql')",
+          "exclude": [
+            "src/Modules/Guihua.Persistence.FreeSql/**",
+            "src/YOU.Api/appsettings.Development.json",
+            "src/YOU.Core/Entities/PersistenceSample.cs"
+          ]
         }
       ]
     }
@@ -52,6 +60,23 @@
       "defaultValue": "net8.0",
       "replaces": "__GUIHUA_TARGET_FRAMEWORK__"
     },
+    "persistence": {
+      "type": "parameter",
+      "datatype": "choice",
+      "displayName": "Persistence",
+      "description": "Optional persistence integration for the generated application.",
+      "choices": [
+        {
+          "choice": "none",
+          "description": "No database dependency (default)."
+        },
+        {
+          "choice": "freesql",
+          "description": "Include FreeSql, SQLite development configuration, and a BaseEntity sample."
+        }
+      ],
+      "defaultValue": "none"
+    },
     "sdkVersion": {
       "type": "generated",
       "generator": "switch",
@@ -66,6 +91,186 @@
           {
         "condition": "(framework == 'net10.0')",
             "value": "10.0.302"
+          }
+        ]
+      }
+    },
+    "freeSqlApiProjectReference": {
+      "type": "generated",
+      "generator": "switch",
+      "replaces": "__GUIHUA_FREESQL_API_PROJECT_REFERENCE__",
+      "parameters": {
+        "evaluator": "C++",
+        "cases": [
+          {
+            "condition": "(persistence == 'freesql')",
+            "value": "    <ProjectReference Include=\"..\\Modules\\Guihua.Persistence.FreeSql\\Guihua.Persistence.FreeSql.csproj\" />"
+          },
+          {
+            "condition": "true",
+            "value": ""
+          }
+        ]
+      }
+    },
+    "freeSqlCorePackageReference": {
+      "type": "generated",
+      "generator": "switch",
+      "replaces": "__GUIHUA_FREESQL_CORE_PACKAGE_REFERENCE__",
+      "parameters": {
+        "evaluator": "C++",
+        "cases": [
+          {
+            "condition": "(persistence == 'freesql')",
+            "value": "<ItemGroup>\n  <PackageReference Include=\"FreeSql.Extensions.BaseEntity\" />\n</ItemGroup>"
+          },
+          {
+            "condition": "true",
+            "value": ""
+          }
+        ]
+      }
+    },
+    "freeSqlCentralPackageVersion": {
+      "type": "generated",
+      "generator": "switch",
+      "replaces": "__GUIHUA_FREESQL_CENTRAL_PACKAGE_VERSION__",
+      "parameters": {
+        "evaluator": "C++",
+        "cases": [
+          {
+            "condition": "(persistence == 'freesql')",
+            "value": "    <PackageVersion Include=\"FreeSql.Extensions.BaseEntity\" Version=\"3.5.310\" />"
+          },
+          {
+            "condition": "true",
+            "value": ""
+          }
+        ]
+      }
+    },
+    "freeSqlProgramUsings": {
+      "type": "generated",
+      "generator": "switch",
+      "replaces": "__GUIHUA_FREESQL_PROGRAM_USINGS__",
+      "parameters": {
+        "evaluator": "C++",
+        "cases": [
+          {
+            "condition": "(persistence == 'freesql')",
+            "value": "using Guihua.Persistence.FreeSql;"
+          },
+          {
+            "condition": "true",
+            "value": ""
+          }
+        ]
+      }
+    },
+    "freeSqlProgramRegistration": {
+      "type": "generated",
+      "generator": "switch",
+      "replaces": "__GUIHUA_FREESQL_PROGRAM_REGISTRATION__",
+      "parameters": {
+        "evaluator": "C++",
+        "cases": [
+          {
+            "condition": "(persistence == 'freesql')",
+            "value": "builder.Services.AddFreeSqlPersistence(builder.Configuration, typeof(CoreMarker).Assembly);"
+          },
+          {
+            "condition": "true",
+            "value": ""
+          }
+        ]
+      }
+    },
+    "freeSqlConfiguration": {
+      "type": "generated",
+      "generator": "switch",
+      "replaces": "__GUIHUA_FREESQL_CONFIGURATION__",
+      "parameters": {
+        "evaluator": "C++",
+        "cases": [
+          {
+            "condition": "(persistence == 'freesql')",
+            "value": ",\n  \"FreeSqlPersistence\": {\n    \"Provider\": \"Sqlite\",\n    \"ConnectionString\": \"Data Source=./app.db\",\n    \"AutoSyncStructure\": false\n  }"
+          },
+          {
+            "condition": "true",
+            "value": ""
+          }
+        ]
+      }
+    },
+    "freeSqlReadme": {
+      "type": "generated",
+      "generator": "switch",
+      "replaces": "__GUIHUA_FREESQL_README__",
+      "parameters": {
+        "evaluator": "C++",
+        "cases": [
+          {
+            "condition": "(persistence == 'freesql')",
+            "value": "\n## FreeSql persistence\n\nThis project was generated with `--persistence freesql`. The optional module is already in `src/Modules/Guihua.Persistence.FreeSql`, registered from `Program.cs`, and supplied with SQLite configuration. `appsettings.Development.json` enables schema synchronization for local development; keep it disabled outside development and use controlled migrations. Add business entities under `src/YOU.Core/Entities` by inheriting `BaseEntity<TEntity, TKey>`, following `PersistenceSample`.\n"
+          },
+          {
+            "condition": "true",
+            "value": ""
+          }
+        ]
+      }
+    },
+    "freeSqlSolutionProject": {
+      "type": "generated",
+      "generator": "switch",
+      "replaces": "__GUIHUA_FREESQL_SOLUTION_PROJECT__",
+      "parameters": {
+        "evaluator": "C++",
+        "cases": [
+          {
+            "condition": "(persistence == 'freesql')",
+            "value": "Project(\"{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}\") = \"Guihua.Persistence.FreeSql\", \"src\\Modules\\Guihua.Persistence.FreeSql\\Guihua.Persistence.FreeSql.csproj\", \"{4EBB1FEF-997C-45D9-9F50-4FC555C6D3D8}\"\nEndProject"
+          },
+          {
+            "condition": "true",
+            "value": ""
+          }
+        ]
+      }
+    },
+    "freeSqlSolutionConfiguration": {
+      "type": "generated",
+      "generator": "switch",
+      "replaces": "__GUIHUA_FREESQL_SOLUTION_CONFIGURATION__",
+      "parameters": {
+        "evaluator": "C++",
+        "cases": [
+          {
+            "condition": "(persistence == 'freesql')",
+            "value": "\t\t{4EBB1FEF-997C-45D9-9F50-4FC555C6D3D8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU\n\t\t{4EBB1FEF-997C-45D9-9F50-4FC555C6D3D8}.Debug|Any CPU.Build.0 = Debug|Any CPU\n\t\t{4EBB1FEF-997C-45D9-9F50-4FC555C6D3D8}.Release|Any CPU.ActiveCfg = Release|Any CPU\n\t\t{4EBB1FEF-997C-45D9-9F50-4FC555C6D3D8}.Release|Any CPU.Build.0 = Release|Any CPU"
+          },
+          {
+            "condition": "true",
+            "value": ""
+          }
+        ]
+      }
+    },
+    "freeSqlForbiddenDependency": {
+      "type": "generated",
+      "generator": "switch",
+      "replaces": "__GUIHUA_FREESQL_FORBIDDEN_DEPENDENCY__",
+      "parameters": {
+        "evaluator": "C++",
+        "cases": [
+          {
+            "condition": "(persistence == 'freesql')",
+            "value": ""
+          },
+          {
+            "condition": "true",
+            "value": "            \"FreeSql\","
           }
         ]
       }

@@ -19,7 +19,7 @@ All templates are created from one package. The application and tool templates g
 This is a prerelease package, so install the exact version:
 
 ```powershell
-dotnet new install Guihua.Templates::1.0.0-beta.2
+dotnet new install Guihua.Templates@1.0.0-beta.3
 dotnet new list guihua
 ```
 
@@ -29,6 +29,12 @@ Create the default .NET 8 application:
 
 ```powershell
 dotnet new guihua -n DeviceService -o .\DeviceService
+```
+
+Create a project with the optional FreeSql persistence module, SQLite development configuration, and a `BaseEntity` sample:
+
+```powershell
+dotnet new guihua -n DeviceService -o .\DeviceService --persistence freesql
 ```
 
 Or create a .NET 10 application:
@@ -47,7 +53,7 @@ dotnet test .\DeviceService.sln -c Release --no-build --no-restore
 dotnet run --project .\src\DeviceService.Api\DeviceService.Api.csproj
 ```
 
-The generated base application does not include FreeSql, Redis, JWT, WebSocket, MediatR, AutoMapper, NLog, RestSharp, or Refit.
+The default generated application does not include FreeSql, Redis, JWT, WebSocket, MediatR, AutoMapper, NLog, RestSharp, or Refit. Selecting `--persistence freesql` explicitly includes FreeSql and its local SQLite development setup.
 
 ## Add an explicit module
 

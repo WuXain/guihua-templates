@@ -15,7 +15,7 @@ public sealed class ArchitectureBaselineTests
         {
             "YOU.Infrastructure",
             "Microsoft.AspNetCore",
-            "FreeSql",
+__GUIHUA_FREESQL_FORBIDDEN_DEPENDENCY__
             "StackExchange.Redis",
             "System.Net.WebSockets"
         };

@@ -135,6 +135,7 @@ function Assert-PackageBoundary {
             'webapi/Directory.Build.props',
             'webapi/Directory.Packages.props',
             'webapi/global.json',
+            'webapi/src/Modules/Guihua.Persistence.FreeSql/Guihua.Persistence.FreeSql.csproj',
             'module/.template.config/template.json',
             'module/ModuleName/ModuleName.csproj',
             'module/ModuleName.Tests/ModuleName.Tests.csproj',
@@ -282,6 +283,62 @@ try {
         finally {
             if (-not $process.HasExited) { $process.Kill($true) }
             $process.WaitForExit()
+        }
+
+        $freeSqlOutput = Join-Path $generated "$framework-freesql"
+        $freeSqlName = "Generated$($framework.Replace('.', ''))FreeSql"
+        Invoke-Dotnet $repo @(
+            'new', 'guihua', '-n', $freeSqlName, '-o', $freeSqlOutput,
+            '--framework', $framework, '--persistence', 'freesql',
+            '--no-update-check', '--debug:custom-hive', $hive, '-v', 'q'
+        )
+        $freeSqlSolution = Get-ChildItem -LiteralPath $freeSqlOutput -Filter '*.sln' -File |
+            Select-Object -ExpandProperty FullName -First 1
+        if (-not $freeSqlSolution) { throw "FreeSql template did not generate a solution for $framework." }
+        $freeSqlModule = Join-Path $freeSqlOutput 'src/Modules/Guihua.Persistence.FreeSql/Guihua.Persistence.FreeSql.csproj'
+        $freeSqlEntity = Join-Path $freeSqlOutput "src/${freeSqlName}.Core/Entities/PersistenceSample.cs"
+        $freeSqlProgram = Join-Path $freeSqlOutput "src/${freeSqlName}.Api/Program.cs"
+        $freeSqlDevelopmentSettings = Join-Path $freeSqlOutput "src/${freeSqlName}.Api/appsettings.Development.json"
+        foreach ($requiredPath in @($freeSqlModule, $freeSqlEntity, $freeSqlDevelopmentSettings)) {
+            if (-not (Test-Path -LiteralPath $requiredPath -PathType Leaf)) { throw "FreeSql template did not generate '$requiredPath'." }
+        }
+        Assert-FileContains $freeSqlProgram 'AddFreeSqlPersistence'
+        Assert-FileContains $freeSqlDevelopmentSettings '"AutoSyncStructure": true'
+        Invoke-Dotnet $freeSqlOutput @('restore', $freeSqlSolution, '--nologo')
+        Assert-NoVulnerablePackages $freeSqlOutput $freeSqlSolution
+        $freeSqlAssets = Get-ChildItem -LiteralPath $freeSqlOutput -Filter project.assets.json -Recurse -File | Get-Content -Raw
+        foreach ($package in @('freesql/', 'freesql.extensions.baseentity/')) {
+            if ($freeSqlAssets -notmatch [regex]::Escape($package)) { throw "FreeSql generated project is missing '$package'." }
+        }
+        Invoke-Dotnet $freeSqlOutput @('build', $freeSqlSolution, '-c', 'Release', '--no-restore', '--nologo', '-warnaserror')
+        Invoke-Dotnet $freeSqlOutput @('test', $freeSqlSolution, '-c', 'Release', '--no-build', '--no-restore', '--nologo')
+
+        $freeSqlApiProject = Join-Path $freeSqlOutput "src/${freeSqlName}.Api/${freeSqlName}.Api.csproj"
+        $freeSqlPort = Get-LoopbackPort
+        $freeSqlAddress = "http://127.0.0.1:$freeSqlPort"
+        $oldEnvironment = $env:ASPNETCORE_ENVIRONMENT
+        $env:ASPNETCORE_ENVIRONMENT = 'Development'
+        try {
+            $freeSqlStartParameters = @{
+                FilePath = 'dotnet'
+                WorkingDirectory = $freeSqlOutput
+                ArgumentList = @('run', '--project', $freeSqlApiProject, '-c', 'Release', '--no-build', '--no-restore', '--urls', $freeSqlAddress)
+                PassThru = $true
+            }
+            if ($IsWindows) { $freeSqlStartParameters['WindowStyle'] = 'Hidden' }
+            $freeSqlProcess = Start-Process @freeSqlStartParameters
+        }
+        finally { $env:ASPNETCORE_ENVIRONMENT = $oldEnvironment }
+        try {
+            Wait-Api $freeSqlProcess $freeSqlAddress
+            $freeSqlDatabase = Join-Path (Split-Path -Parent $freeSqlApiProject) 'app.db'
+            if (-not (Test-Path -LiteralPath $freeSqlDatabase -PathType Leaf)) {
+                throw 'FreeSql Development startup did not create app.db.'
+            }
+        }
+        finally {
+            if (-not $freeSqlProcess.HasExited) { $freeSqlProcess.Kill($true) }
+            $freeSqlProcess.WaitForExit()
         }
 
         $moduleOutput = Join-Path $mainOutput 'src/Modules/DeviceCommunication'

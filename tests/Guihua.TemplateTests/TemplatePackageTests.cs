@@ -41,8 +41,10 @@ public sealed class TemplatePackageTests
         var help = Run(repositoryRoot, "new", "guihua", "-h", "--debug:custom-hive", hive);
         Assert.True(help.ExitCode == 0, help.ToString());
         Assert.Contains("--framework", help.StandardOutput, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("--persistence", help.StandardOutput, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("net8.0", help.StandardOutput, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("net10.0", help.StandardOutput, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("freesql", help.StandardOutput, StringComparison.OrdinalIgnoreCase);
 
         var moduleHelp = Run(repositoryRoot, "new", "guihua-module", "-h", "--debug:custom-hive", hive);
         Assert.True(moduleHelp.ExitCode == 0, moduleHelp.ToString());
@@ -58,14 +60,23 @@ public sealed class TemplatePackageTests
         var invalid = Run(repositoryRoot, "new", "guihua", "-n", "Invalid", "-o", invalidOutput, "--framework", "net7.0", "--no-update-check", "--debug:custom-hive", hive, "-v", "q");
         Assert.NotEqual(0, invalid.ExitCode);
 
-        GenerateAndVerify(repositoryRoot, hive, generatedRoot, "net8.0");
-        GenerateAndVerify(repositoryRoot, hive, generatedRoot, "net10.0");
+        GenerateAndVerify(repositoryRoot, hive, generatedRoot, "net8.0", "none");
+        GenerateAndVerify(repositoryRoot, hive, generatedRoot, "net10.0", "none");
+        GenerateAndVerify(repositoryRoot, hive, generatedRoot, "net8.0", "freesql");
+        GenerateAndVerify(repositoryRoot, hive, generatedRoot, "net10.0", "freesql");
     }
 
-    private static void GenerateAndVerify(string repositoryRoot, string hive, string generatedRoot, string framework)
+    private static void GenerateAndVerify(
+        string repositoryRoot,
+        string hive,
+        string generatedRoot,
+        string framework,
+        string persistence)
     {
-        var sampleName = framework == "net8.0" ? "Net8Sample" : "Net10Sample";
-        var output = Path.Combine(generatedRoot, framework);
+        var frameworkName = framework == "net8.0" ? "Net8" : "Net10";
+        var sampleName = persistence == "freesql" ? $"{frameworkName}FreeSqlSample" : $"{frameworkName}Sample";
+        var output = Path.Combine(generatedRoot, framework, persistence);
+        var includesFreeSql = persistence == "freesql";
         var generationArguments = new List<string>
         {
             "new", "guihua", "-n", sampleName, "-o", output
@@ -73,6 +84,10 @@ public sealed class TemplatePackageTests
         if (framework == "net10.0")
         {
             generationArguments.AddRange(["--framework", framework]);
+        }
+        if (includesFreeSql)
+        {
+            generationArguments.AddRange(["--persistence", "freesql"]);
         }
 
         generationArguments.AddRange(["--no-update-check", "--debug:custom-hive", hive, "-v", "q"]);
@@ -92,14 +107,25 @@ public sealed class TemplatePackageTests
         Assert.Contains("Condition=\"'$(TargetFramework)' == 'net8.0'\"", packageProps, StringComparison.Ordinal);
         Assert.Contains("Condition=\"'$(TargetFramework)' == 'net10.0'\"", packageProps, StringComparison.Ordinal);
         Assert.DoesNotContain("<TargetFrameworks>", props, StringComparison.Ordinal);
+        if (includesFreeSql)
+        {
+            Assert.Contains("FreeSql.Extensions.BaseEntity", packageProps, StringComparison.Ordinal);
+        }
 
-        AssertGeneratedBoundary(output, sampleName);
+        AssertGeneratedBoundary(output, sampleName, includesFreeSql);
 
         var solution = Path.Combine(output, $"{sampleName}.sln");
         var restore = Run(output, "restore", solution, "--nologo");
         Assert.True(restore.ExitCode == 0, restore.ToString());
         AssertResolvedPackageVersion(output, framework);
-        AssertNoOptInPackages(output);
+        if (includesFreeSql)
+        {
+            AssertFreeSqlIntegration(output, sampleName);
+        }
+        else
+        {
+            AssertNoOptInPackages(output);
+        }
 
         var build = Run(output, "build", solution, "-c", "Release", "--no-restore", "--nologo", "-warnaserror");
         Assert.True(build.ExitCode == 0, build.ToString());
@@ -107,10 +133,10 @@ public sealed class TemplatePackageTests
         var test = Run(output, "test", solution, "-c", "Release", "--no-build", "--no-restore", "--nologo");
         Assert.True(test.ExitCode == 0, test.ToString());
 
-        RunApiAndVerify(output, sampleName);
+        RunApiAndVerify(output, sampleName, includesFreeSql);
     }
 
-    private static void RunApiAndVerify(string output, string sampleName)
+    private static void RunApiAndVerify(string output, string sampleName, bool includesFreeSql)
     {
         var port = GetAvailableLoopbackPort();
         var address = $"http://127.0.0.1:{port}";
@@ -124,6 +150,7 @@ public sealed class TemplatePackageTests
             RedirectStandardError = true,
             CreateNoWindow = true
         };
+        startInfo.Environment["ASPNETCORE_ENVIRONMENT"] = "Development";
         foreach (var argument in new[]
                  {
                      "run", "--project", project, "-c", "Release", "--no-build", "--no-restore", "--urls", address
@@ -178,6 +205,12 @@ public sealed class TemplatePackageTests
                     var runtimeBody = runtimeResponse.Content.ReadAsStringAsync().GetAwaiter().GetResult();
                     Assert.Equal(HttpStatusCode.OK, runtimeResponse.StatusCode);
                     Assert.Contains("\"state\":\"Ready\"", runtimeBody, StringComparison.Ordinal);
+                    if (includesFreeSql)
+                    {
+                        Assert.True(
+                            File.Exists(Path.Combine(output, "src", $"{sampleName}.Api", "app.db")),
+                            "FreeSql development startup did not create app.db.");
+                    }
                     return;
                 }
                 catch (HttpRequestException)
@@ -249,6 +282,31 @@ public sealed class TemplatePackageTests
         }
     }
 
+    private static void AssertFreeSqlIntegration(string output, string sampleName)
+    {
+        var moduleProject = Path.Combine(output, "src", "Modules", "Guihua.Persistence.FreeSql", "Guihua.Persistence.FreeSql.csproj");
+        var apiProject = Path.Combine(output, "src", $"{sampleName}.Api", $"{sampleName}.Api.csproj");
+        var coreProject = Path.Combine(output, "src", $"{sampleName}.Core", $"{sampleName}.Core.csproj");
+        var program = Path.Combine(output, "src", $"{sampleName}.Api", "Program.cs");
+        var settings = Path.Combine(output, "src", $"{sampleName}.Api", "appsettings.json");
+        var developmentSettings = Path.Combine(output, "src", $"{sampleName}.Api", "appsettings.Development.json");
+        var entity = Path.Combine(output, "src", $"{sampleName}.Core", "Entities", "PersistenceSample.cs");
+
+        Assert.True(File.Exists(moduleProject));
+        Assert.True(File.Exists(entity));
+        Assert.Contains("Guihua.Persistence.FreeSql", File.ReadAllText(apiProject), StringComparison.Ordinal);
+        Assert.Contains("FreeSql.Extensions.BaseEntity", File.ReadAllText(coreProject), StringComparison.Ordinal);
+        Assert.Contains("AddFreeSqlPersistence", File.ReadAllText(program), StringComparison.Ordinal);
+        Assert.Contains("FreeSqlPersistence", File.ReadAllText(settings), StringComparison.Ordinal);
+        Assert.Contains("\"AutoSyncStructure\": true", File.ReadAllText(developmentSettings), StringComparison.Ordinal);
+
+        var assets = Directory.EnumerateFiles(output, "project.assets.json", SearchOption.AllDirectories)
+            .Select(File.ReadAllText)
+            .ToArray();
+        Assert.Contains(assets, content => content.Contains("freesql/", StringComparison.OrdinalIgnoreCase));
+        Assert.Contains(assets, content => content.Contains("freesql.extensions.baseentity/", StringComparison.OrdinalIgnoreCase));
+    }
+
     private static void AssertPackageBoundary(string packagePath)
     {
         using var archive = ZipFile.OpenRead(packagePath);
@@ -262,6 +320,7 @@ public sealed class TemplatePackageTests
         Assert.Contains("webapi/README.md", entries);
         Assert.Contains("webapi/global.json", entries);
         Assert.Contains("webapi/src/YOU.Api/YOU.Api.csproj", entries);
+        Assert.Contains("webapi/src/Modules/Guihua.Persistence.FreeSql/Guihua.Persistence.FreeSql.csproj", entries);
         Assert.Contains("module/.template.config/template.json", entries);
         Assert.Contains("module/ModuleName/ModuleName.csproj", entries);
         Assert.Contains("module/ModuleName.Tests/ModuleName.Tests.csproj", entries);
@@ -287,7 +346,7 @@ public sealed class TemplatePackageTests
         Assert.DoesNotContain("<dependencies>", manifest, StringComparison.Ordinal);
     }
 
-    private static void AssertGeneratedBoundary(string output, string sampleName)
+    private static void AssertGeneratedBoundary(string output, string sampleName, bool includesFreeSql)
     {
         var files = Directory.EnumerateFiles(output, "*", SearchOption.AllDirectories)
             .Select(path => Path.GetRelativePath(output, path).Replace('\\', '/'))
@@ -298,7 +357,15 @@ public sealed class TemplatePackageTests
         Assert.Contains("README.md", files);
         Assert.Contains(files, file => file.EndsWith($"/{sampleName}.Api.csproj", StringComparison.Ordinal));
         Assert.DoesNotContain(files, file => ContainsPathPart(file, "packaging"));
-        Assert.DoesNotContain(files, file => ContainsPathPart(file, "modules"));
+        if (includesFreeSql)
+        {
+            Assert.Contains($"src/Modules/Guihua.Persistence.FreeSql/Guihua.Persistence.FreeSql.csproj", files);
+            Assert.Contains($"src/{sampleName}.Core/Entities/PersistenceSample.cs", files);
+        }
+        else
+        {
+            Assert.DoesNotContain(files, file => ContainsPathPart(file, "modules"));
+        }
         Assert.DoesNotContain(files, file => ContainsPathPart(file, "docs"));
         Assert.DoesNotContain(files, file => ContainsPathPart(file, "artifacts"));
         Assert.DoesNotContain(files, file => ContainsPathPart(file, "package"));
@@ -317,15 +384,20 @@ public sealed class TemplatePackageTests
                 || file.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase))
             .Select(file => File.ReadAllText(Path.Combine(output, file.Replace('/', Path.DirectorySeparatorChar))))
             .ToArray();
-        foreach (var optInMarker in new[]
+        var optInMarkers = new[]
                  {
-                     "AddFreeSqlPersistence",
                      "AddGuihuaHostedService",
                      "AddHttpIntegration",
-                     "FreeSqlPersistence:Provider",
                      "GuihuaHostedService:IntervalMilliseconds",
                      "IntegrationHttp:BaseAddress"
-                 })
+                 }.ToList();
+        if (!includesFreeSql)
+        {
+            optInMarkers.Add("AddFreeSqlPersistence");
+            optInMarkers.Add("FreeSqlPersistence");
+        }
+
+        foreach (var optInMarker in optInMarkers)
         {
             Assert.DoesNotContain(generatedSource, content => content.Contains(optInMarker, StringComparison.Ordinal));
         }

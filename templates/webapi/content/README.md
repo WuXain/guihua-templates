@@ -16,6 +16,12 @@ dotnet run --project .\src\YOU.Api\YOU.Api.csproj
 - `dotnet new guihua -n MyService`：net8.0；
 - `dotnet new guihua -n MyService --framework net10.0`：net10.0。
 
+选择带 SQLite 开发配置、`BaseEntity` 示例和启动建表的 FreeSql 持久化：
+
+```powershell
+dotnet new guihua -n MyService --persistence freesql
+```
+
 模板会同时选择匹配的 SDK 和条件包版本。需要切换大版本时，建议重新生成后迁移业务代码，或者同时审查 `global.json`、`Directory.Build.props` 和 `Directory.Packages.props`，不要只修改 csproj。
 
 ## API 合同
@@ -49,4 +55,5 @@ dotnet run --project .\src\YOU.Api\YOU.Api.csproj
 
 ## 可选模块
 
-FreeSql、HostedService 和 typed HttpClient 模块都不在默认生成物中。确有需要时，从 [Guihua Templates 仓库](https://github.com/WuXain/guihua-templates) 的 `modules/` 目录选择一个模块，按模块 README 显式添加项目引用、配置和注册调用。模块不会扫描程序集或自动改写 `Program.cs`。
+FreeSql 可通过 `--persistence freesql` 在生成时显式带入；不选择时，默认生成物不包含数据库依赖。HostedService 和 typed HttpClient 仍需从 [Guihua Templates 仓库](https://github.com/WuXain/guihua-templates) 的 `modules/` 目录按模块 README 显式接入，因为它们需要具体的业务适配器或外部地址。
+__GUIHUA_FREESQL_README__

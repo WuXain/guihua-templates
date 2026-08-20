@@ -2,7 +2,10 @@ using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Models;
 using YOU.Api.Contracts;
+using YOU.Core;
+using YOU.Core.Features.RuntimeStatus;
 using YOU.Infrastructure;
+__GUIHUA_FREESQL_PROGRAM_USINGS__
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -45,8 +48,18 @@ builder.Services.AddSwaggerGen(options =>
         Version = "v1",
         Description = "业务 JSON 结果统一使用 HTTP 200；code 是数值应用结果码。"
     });
+
+    foreach (var assembly in new[] { typeof(Program).Assembly, typeof(RuntimeStatus).Assembly })
+    {
+        var xmlPath = Path.Combine(AppContext.BaseDirectory, $"{assembly.GetName().Name}.xml");
+        if (File.Exists(xmlPath))
+        {
+            options.IncludeXmlComments(xmlPath);
+        }
+    }
 });
 builder.Services.AddInfrastructure();
+__GUIHUA_FREESQL_PROGRAM_REGISTRATION__
 
 var app = builder.Build();
 

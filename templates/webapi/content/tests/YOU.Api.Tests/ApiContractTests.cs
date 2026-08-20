@@ -102,6 +102,8 @@ public sealed class ApiContractTests : IClassFixture<ApiContractFactory>
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Contains("/api/demo/greeting", json, StringComparison.Ordinal);
         Assert.Contains("ApiResponse", json, StringComparison.Ordinal);
+        Assert.Contains("获取一条问候信息", json, StringComparison.Ordinal);
+        Assert.Contains("要由服务端原样返回的文本", json, StringComparison.Ordinal);
     }
 
     private static async Task<JsonDocument> ReadBody(HttpResponseMessage response)

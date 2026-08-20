@@ -25,7 +25,7 @@
 公开试用版发布到 NuGet 后，可安装指定版本：
 
 ```powershell
-dotnet new install Guihua.Templates::1.0.0-beta.2
+dotnet new install Guihua.Templates@1.0.0-beta.3
 dotnet new list guihua
 ```
 
@@ -33,6 +33,12 @@ dotnet new list guihua
 
 ```powershell
 dotnet new guihua -n DeviceService -o .\DeviceService
+```
+
+创建带 FreeSql、SQLite 开发配置与 `BaseEntity` 示例的项目：
+
+```powershell
+dotnet new guihua -n DeviceService -o .\DeviceService --persistence freesql
 ```
 
 创建 .NET 10 Web API：
@@ -59,11 +65,11 @@ dotnet test .\Guihua.Template.sln -c Release --no-build --no-restore
 
 ## 可选模块
 
-`modules/` 当前提供 FreeSql 持久化、HostedService 和 typed HttpClient 示例。它们不会进入默认生成物，需要项目按实际需求显式接入。
+`--persistence freesql` 会将 FreeSql 持久化模块、项目引用、SQLite 开发配置和 `BaseEntity` 示例一起生成；默认模式仍不包含数据库依赖。HostedService 和 typed HttpClient 需要具体的业务适配器或外部地址，继续在 `modules/` 中按需显式接入。
 
 ## 版本状态
 
-`1.0.0-beta.1` 是迁移到 GitHub 后的首个公开试用版本；`1.0.0-beta.2` 补齐了 Web API 模板的 Development Swagger UI 启动配置。试用稳定后再发布 `1.0.0`，NuGet 包发布与 GitHub 源码版本保持一致。
+`1.0.0-beta.1` 是迁移到 GitHub 后的首个公开试用版本；`1.0.0-beta.2` 补齐了 Web API 模板的 Development Swagger UI 启动配置；`1.0.0-beta.3` 增加可选的 FreeSql BaseEntity / SQLite 持久化路径和 Swagger XML 注释。试用稳定后再发布 `1.0.0`，NuGet 包发布与 GitHub 源码版本保持一致。
 
 ## License
 

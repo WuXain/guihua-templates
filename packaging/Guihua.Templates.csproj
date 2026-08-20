@@ -4,7 +4,7 @@
     <IsPackable>true</IsPackable>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <PackageId>Guihua.Templates</PackageId>
-    <Version>1.0.0-beta.2</Version>
+    <Version>1.0.0-beta.3</Version>
     <Title>YOU / Guihua .NET Web API Templates</Title>
     <PackageType>Template</PackageType>
     <Authors>Charles.Yu</Authors>
@@ -13,7 +13,7 @@
     <PackageTags>dotnet-new;template;webapi;aspnetcore;net8;net10;modular;tooling</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageReleaseNotes>Adds a Development Swagger UI launch profile to the Web API template. Includes guihua, guihua-module, and guihua-tool templates with net8.0/net10.0 generation.</PackageReleaseNotes>
+    <PackageReleaseNotes>Adds the --persistence freesql opt-in for a wired FreeSql BaseEntity and SQLite development setup, plus XML comments in generated Swagger. Includes guihua, guihua-module, and guihua-tool templates with net8.0/net10.0 generation.</PackageReleaseNotes>
     <PackageProjectUrl>https://github.com/WuXain/guihua-templates</PackageProjectUrl>
     <RepositoryUrl>https://github.com/WuXain/guihua-templates.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
@@ -35,6 +35,10 @@
           Exclude="..\templates\webapi\content\**\artifacts\**;..\templates\webapi\content\**\bin\**;..\templates\webapi\content\**\obj\**;..\templates\webapi\content\**\docs\**;..\templates\webapi\content\**\v2\**;..\templates\webapi\content\**\*.nupkg"
           Pack="true"
           PackagePath="webapi\%(RecursiveDir)%(Filename)%(Extension)" />
+    <None Include="..\modules\persistence-freesql\**\*"
+          Exclude="..\modules\persistence-freesql\tests\**;..\modules\persistence-freesql\**\bin\**;..\modules\persistence-freesql\**\obj\**;..\modules\persistence-freesql\**\*.nupkg"
+          Pack="true"
+          PackagePath="webapi\src\Modules\Guihua.Persistence.FreeSql\%(RecursiveDir)%(Filename)%(Extension)" />
     <None Include="..\templates\module\**\*"
           Exclude="..\templates\module\**\artifacts\**;..\templates\module\**\bin\**;..\templates\module\**\obj\**;..\templates\module\**\*.nupkg"
           Pack="true"

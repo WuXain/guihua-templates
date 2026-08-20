@@ -17,5 +17,6 @@
     <PackageVersion Include="Swashbuckle.AspNetCore" Version="9.0.6" />
     <PackageVersion Include="xunit" Version="2.9.3" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
+__GUIHUA_FREESQL_CENTRAL_PACKAGE_VERSION__
   </ItemGroup>
 </Project>

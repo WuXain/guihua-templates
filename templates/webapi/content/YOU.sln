@@ -13,6 +13,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YOU.Api.Tests", "tests\YOU.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YOU.ArchitectureTests", "tests\YOU.ArchitectureTests\YOU.ArchitectureTests.csproj", "{D5D2DD6C-18A1-4EB4-A628-BDDD97F25A81}"
 EndProject
+__GUIHUA_FREESQL_SOLUTION_PROJECT__
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,5 +40,6 @@ Global
 		{D5D2DD6C-18A1-4EB4-A628-BDDD97F25A81}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D5D2DD6C-18A1-4EB4-A628-BDDD97F25A81}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D5D2DD6C-18A1-4EB4-A628-BDDD97F25A81}.Release|Any CPU.Build.0 = Release|Any CPU
+__GUIHUA_FREESQL_SOLUTION_CONFIGURATION__
 	EndGlobalSection
 EndGlobal
