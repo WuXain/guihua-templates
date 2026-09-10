@@ -9,6 +9,9 @@ namespace Guihua.TemplateTests;
 
 public sealed class TemplatePackageTests
 {
+    /// <summary>
+    /// 验证真实模板包可以安装，并覆盖默认、FreeSql、Mapperly 及组合生成路径。
+    /// </summary>
     [Fact]
     public void RealPackageCanInstallHelpGenerateAndBuildWithinItsBoundary()
     {
@@ -42,9 +45,11 @@ public sealed class TemplatePackageTests
         Assert.True(help.ExitCode == 0, help.ToString());
         Assert.Contains("--framework", help.StandardOutput, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("--persistence", help.StandardOutput, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("--mapping", help.StandardOutput, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("net8.0", help.StandardOutput, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("net10.0", help.StandardOutput, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("freesql", help.StandardOutput, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("mapperly", help.StandardOutput, StringComparison.OrdinalIgnoreCase);
 
         var moduleHelp = Run(repositoryRoot, "new", "guihua-module", "-h", "--debug:custom-hive", hive);
         Assert.True(moduleHelp.ExitCode == 0, moduleHelp.ToString());
@@ -60,10 +65,13 @@ public sealed class TemplatePackageTests
         var invalid = Run(repositoryRoot, "new", "guihua", "-n", "Invalid", "-o", invalidOutput, "--framework", "net7.0", "--no-update-check", "--debug:custom-hive", hive, "-v", "q");
         Assert.NotEqual(0, invalid.ExitCode);
 
-        GenerateAndVerify(repositoryRoot, hive, generatedRoot, "net8.0", "none");
-        GenerateAndVerify(repositoryRoot, hive, generatedRoot, "net10.0", "none");
-        GenerateAndVerify(repositoryRoot, hive, generatedRoot, "net8.0", "freesql");
-        GenerateAndVerify(repositoryRoot, hive, generatedRoot, "net10.0", "freesql");
+        GenerateAndVerify(repositoryRoot, hive, generatedRoot, "net8.0", "none", "none");
+        GenerateAndVerify(repositoryRoot, hive, generatedRoot, "net10.0", "none", "none");
+        GenerateAndVerify(repositoryRoot, hive, generatedRoot, "net8.0", "freesql", "none");
+        GenerateAndVerify(repositoryRoot, hive, generatedRoot, "net10.0", "freesql", "none");
+        GenerateAndVerify(repositoryRoot, hive, generatedRoot, "net8.0", "none", "mapperly");
+        GenerateAndVerify(repositoryRoot, hive, generatedRoot, "net10.0", "none", "mapperly");
+        GenerateAndVerify(repositoryRoot, hive, generatedRoot, "net8.0", "freesql", "mapperly");
     }
 
     private static void GenerateAndVerify(
@@ -71,12 +79,15 @@ public sealed class TemplatePackageTests
         string hive,
         string generatedRoot,
         string framework,
-        string persistence)
+        string persistence,
+        string mapping)
     {
         var frameworkName = framework == "net8.0" ? "Net8" : "Net10";
-        var sampleName = persistence == "freesql" ? $"{frameworkName}FreeSqlSample" : $"{frameworkName}Sample";
-        var output = Path.Combine(generatedRoot, framework, persistence);
+        var profileName = $"{(persistence == "freesql" ? "FreeSql" : string.Empty)}{(mapping == "mapperly" ? "Mapperly" : string.Empty)}";
+        var sampleName = $"{frameworkName}{profileName}Sample";
+        var output = Path.Combine(generatedRoot, framework, persistence, mapping);
         var includesFreeSql = persistence == "freesql";
+        var includesMapperly = mapping == "mapperly";
         var generationArguments = new List<string>
         {
             "new", "guihua", "-n", sampleName, "-o", output
@@ -88,6 +99,10 @@ public sealed class TemplatePackageTests
         if (includesFreeSql)
         {
             generationArguments.AddRange(["--persistence", "freesql"]);
+        }
+        if (includesMapperly)
+        {
+            generationArguments.AddRange(["--mapping", "mapperly"]);
         }
 
         generationArguments.AddRange(["--no-update-check", "--debug:custom-hive", hive, "-v", "q"]);
@@ -111,8 +126,12 @@ public sealed class TemplatePackageTests
         {
             Assert.Contains("FreeSql.Extensions.BaseEntity", packageProps, StringComparison.Ordinal);
         }
+        if (includesMapperly)
+        {
+            Assert.Contains("Riok.Mapperly", packageProps, StringComparison.Ordinal);
+        }
 
-        AssertGeneratedBoundary(output, sampleName, includesFreeSql);
+        AssertGeneratedBoundary(output, sampleName, includesFreeSql, includesMapperly);
 
         var solution = Path.Combine(output, $"{sampleName}.sln");
         var restore = Run(output, "restore", solution, "--nologo");
@@ -122,7 +141,11 @@ public sealed class TemplatePackageTests
         {
             AssertFreeSqlIntegration(output, sampleName);
         }
-        else
+        if (includesMapperly)
+        {
+            AssertMapperlyIntegration(output, sampleName);
+        }
+        if (!includesFreeSql && !includesMapperly)
         {
             AssertNoOptInPackages(output);
         }
@@ -270,6 +293,7 @@ public sealed class TemplatePackageTests
             "stackexchange.redis/",
             "microsoft.aspnetcore.authentication.jwtbearer/",
             "mediatr/",
+            "riok.mapperly/",
             "automapper/",
             "nlog/",
             "restsharp/",
@@ -305,6 +329,28 @@ public sealed class TemplatePackageTests
             .ToArray();
         Assert.Contains(assets, content => content.Contains("freesql/", StringComparison.OrdinalIgnoreCase));
         Assert.Contains(assets, content => content.Contains("freesql.extensions.baseentity/", StringComparison.OrdinalIgnoreCase));
+        Assert.Contains(assets, content => content.Contains("freesql.provider.mysqlconnector/", StringComparison.OrdinalIgnoreCase));
+        Assert.DoesNotContain(assets, content => content.Contains("freesql.provider.mysql/", StringComparison.OrdinalIgnoreCase));
+        Assert.DoesNotContain(assets, content => content.Contains("mysql.data/", StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static void AssertMapperlyIntegration(string output, string sampleName)
+    {
+        var apiDirectory = Path.Combine(output, "src", $"{sampleName}.Api");
+        var apiProject = Path.Combine(apiDirectory, $"{sampleName}.Api.csproj");
+        var controller = Path.Combine(apiDirectory, "Controllers", "DemoController.Mapperly.cs");
+        var mapper = Path.Combine(apiDirectory, "Mapping", "DemoMapper.cs");
+        var response = Path.Combine(apiDirectory, "Models", "RuntimeStatusResponse.cs");
+
+        Assert.True(File.Exists(mapper));
+        Assert.True(File.Exists(response));
+        Assert.Contains("Riok.Mapperly", File.ReadAllText(apiProject), StringComparison.Ordinal);
+        Assert.Contains("DemoMapper.ToResponse(status)", File.ReadAllText(controller), StringComparison.Ordinal);
+
+        var assets = Directory.EnumerateFiles(output, "project.assets.json", SearchOption.AllDirectories)
+            .Select(File.ReadAllText)
+            .ToArray();
+        Assert.Contains(assets, content => content.Contains("riok.mapperly/4.3.1", StringComparison.OrdinalIgnoreCase));
     }
 
     private static void AssertPackageBoundary(string packagePath)
@@ -346,7 +392,11 @@ public sealed class TemplatePackageTests
         Assert.DoesNotContain("<dependencies>", manifest, StringComparison.Ordinal);
     }
 
-    private static void AssertGeneratedBoundary(string output, string sampleName, bool includesFreeSql)
+    private static void AssertGeneratedBoundary(
+        string output,
+        string sampleName,
+        bool includesFreeSql,
+        bool includesMapperly)
     {
         var files = Directory.EnumerateFiles(output, "*", SearchOption.AllDirectories)
             .Select(path => Path.GetRelativePath(output, path).Replace('\\', '/'))
@@ -365,6 +415,20 @@ public sealed class TemplatePackageTests
         else
         {
             Assert.DoesNotContain(files, file => ContainsPathPart(file, "modules"));
+        }
+        if (includesMapperly)
+        {
+            Assert.Contains($"src/{sampleName}.Api/Controllers/DemoController.Mapperly.cs", files);
+            Assert.DoesNotContain($"src/{sampleName}.Api/Controllers/DemoController.cs", files);
+            Assert.Contains($"src/{sampleName}.Api/Mapping/DemoMapper.cs", files);
+            Assert.Contains($"src/{sampleName}.Api/Models/RuntimeStatusResponse.cs", files);
+        }
+        else
+        {
+            Assert.Contains($"src/{sampleName}.Api/Controllers/DemoController.cs", files);
+            Assert.DoesNotContain($"src/{sampleName}.Api/Controllers/DemoController.Mapperly.cs", files);
+            Assert.DoesNotContain(files, file => ContainsPathPart(file, "mapping"));
+            Assert.DoesNotContain(files, file => file.EndsWith("/RuntimeStatusResponse.cs", StringComparison.Ordinal));
         }
         Assert.DoesNotContain(files, file => ContainsPathPart(file, "docs"));
         Assert.DoesNotContain(files, file => ContainsPathPart(file, "artifacts"));

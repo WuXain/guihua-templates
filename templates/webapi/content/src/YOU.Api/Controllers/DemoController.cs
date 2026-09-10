@@ -13,6 +13,10 @@ public sealed class DemoController : BaseController
 {
     private readonly GetRuntimeStatusUseCase _getRuntimeStatus;
 
+    /// <summary>
+    /// 创建演示接口控制器。
+    /// </summary>
+    /// <param name="getRuntimeStatus">获取运行状态的用例。</param>
     public DemoController(GetRuntimeStatusUseCase getRuntimeStatus)
     {
         _getRuntimeStatus = getRuntimeStatus;

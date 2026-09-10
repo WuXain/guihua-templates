@@ -7,7 +7,7 @@
 ## 设计原则
 
 - 默认生成 `net8.0`，并支持选择 `net10.0`；
-- 基础 Web API 不预装数据库、Redis、JWT、AutoMapper、MediatR 等可选能力；
+- 基础 Web API 不预装数据库、Redis、JWT、对象映射、MediatR 等可选能力；
 - 模块通过项目引用、依赖注入和端点注册显式接入，不使用运行时程序集扫描；
 - 生成物本身必须可以还原、构建、测试和启动；
 - HTTP 200 承载已处理的 JSON 业务结果，使用数值 `code`；未知路由等协议级结果保留真实 HTTP 状态码。
@@ -25,7 +25,7 @@
 公开试用版发布到 NuGet 后，可安装指定版本：
 
 ```powershell
-dotnet new install Guihua.Templates@1.0.0-beta.3
+dotnet new install Guihua.Templates@1.0.0-beta.4
 dotnet new list guihua
 ```
 
@@ -39,6 +39,18 @@ dotnet new guihua -n DeviceService -o .\DeviceService
 
 ```powershell
 dotnet new guihua -n DeviceService -o .\DeviceService --persistence freesql
+```
+
+创建带 Mapperly 编译期对象映射示例的项目：
+
+```powershell
+dotnet new guihua -n DeviceService -o .\DeviceService --mapping mapperly
+```
+
+两个可选能力可以组合：
+
+```powershell
+dotnet new guihua -n DeviceService -o .\DeviceService --persistence freesql --mapping mapperly
 ```
 
 创建 .NET 10 Web API：
@@ -65,11 +77,11 @@ dotnet test .\Guihua.Template.sln -c Release --no-build --no-restore
 
 ## 可选模块
 
-`--persistence freesql` 会将 FreeSql 持久化模块、项目引用、SQLite 开发配置和 `BaseEntity` 示例一起生成；默认模式仍不包含数据库依赖。HostedService 和 typed HttpClient 需要具体的业务适配器或外部地址，继续在 `modules/` 中按需显式接入。
+`--persistence freesql` 会将 FreeSql 持久化模块、项目引用、SQLite 开发配置和 `BaseEntity` 示例一起生成；`--mapping mapperly` 会加入 Mapperly 源生成器、API 映射类和独立响应 DTO。两个参数可以组合，默认模式仍不包含这些依赖。HostedService 和 typed HttpClient 需要具体的业务适配器或外部地址，继续在 `modules/` 中按需显式接入。
 
 ## 版本状态
 
-`1.0.0-beta.1` 是迁移到 GitHub 后的首个公开试用版本；`1.0.0-beta.2` 补齐了 Web API 模板的 Development Swagger UI 启动配置；`1.0.0-beta.3` 增加可选的 FreeSql BaseEntity / SQLite 持久化路径和 Swagger XML 注释。试用稳定后再发布 `1.0.0`，NuGet 包发布与 GitHub 源码版本保持一致。
+`1.0.0-beta.1` 是迁移到 GitHub 后的首个公开试用版本；`1.0.0-beta.2` 补齐了 Web API 模板的 Development Swagger UI 启动配置；`1.0.0-beta.3` 增加可选的 FreeSql BaseEntity / SQLite 持久化路径和 Swagger XML 注释；`1.0.0-beta.4` 将 MySQL 驱动切换为 MySqlConnector，并增加可选的 Mapperly 编译期映射。试用稳定后再发布 `1.0.0`，NuGet 包发布与 GitHub 源码版本保持一致。
 
 ## License
 

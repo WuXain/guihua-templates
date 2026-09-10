@@ -257,7 +257,7 @@ try {
         Invoke-Dotnet $mainOutput @('build', $solution, '-c', 'Release', '--no-restore', '--nologo', '-warnaserror')
         Invoke-Dotnet $mainOutput @('test', $solution, '-c', 'Release', '--no-build', '--no-restore', '--nologo')
         $assets = Get-ChildItem -LiteralPath $mainOutput -Filter project.assets.json -Recurse -File | Get-Content -Raw
-        foreach ($package in @('freesql/', 'stackexchange.redis/', 'automapper/', 'nlog/', 'restsharp/', 'refit/')) {
+        foreach ($package in @('freesql/', 'riok.mapperly/', 'stackexchange.redis/', 'automapper/', 'nlog/', 'restsharp/', 'refit/')) {
             if ($assets -match [regex]::Escape($package)) { throw "Default generated project unexpectedly contains '$package'." }
         }
 
@@ -285,11 +285,11 @@ try {
             $process.WaitForExit()
         }
 
-        $freeSqlOutput = Join-Path $generated "$framework-freesql"
-        $freeSqlName = "Generated$($framework.Replace('.', ''))FreeSql"
+        $freeSqlOutput = Join-Path $generated "$framework-freesql-mapperly"
+        $freeSqlName = "Generated$($framework.Replace('.', ''))FreeSqlMapperly"
         Invoke-Dotnet $repo @(
             'new', 'guihua', '-n', $freeSqlName, '-o', $freeSqlOutput,
-            '--framework', $framework, '--persistence', 'freesql',
+            '--framework', $framework, '--persistence', 'freesql', '--mapping', 'mapperly',
             '--no-update-check', '--debug:custom-hive', $hive, '-v', 'q'
         )
         $freeSqlSolution = Get-ChildItem -LiteralPath $freeSqlOutput -Filter '*.sln' -File |
@@ -298,17 +298,25 @@ try {
         $freeSqlModule = Join-Path $freeSqlOutput 'src/Modules/Guihua.Persistence.FreeSql/Guihua.Persistence.FreeSql.csproj'
         $freeSqlEntity = Join-Path $freeSqlOutput "src/${freeSqlName}.Core/Entities/PersistenceSample.cs"
         $freeSqlProgram = Join-Path $freeSqlOutput "src/${freeSqlName}.Api/Program.cs"
+        $mapperlyProject = Join-Path $freeSqlOutput "src/${freeSqlName}.Api/${freeSqlName}.Api.csproj"
+        $mapperlySource = Join-Path $freeSqlOutput "src/${freeSqlName}.Api/Mapping/DemoMapper.cs"
+        $mapperlyController = Join-Path $freeSqlOutput "src/${freeSqlName}.Api/Controllers/DemoController.Mapperly.cs"
         $freeSqlDevelopmentSettings = Join-Path $freeSqlOutput "src/${freeSqlName}.Api/appsettings.Development.json"
-        foreach ($requiredPath in @($freeSqlModule, $freeSqlEntity, $freeSqlDevelopmentSettings)) {
+        foreach ($requiredPath in @($freeSqlModule, $freeSqlEntity, $freeSqlDevelopmentSettings, $mapperlySource)) {
             if (-not (Test-Path -LiteralPath $requiredPath -PathType Leaf)) { throw "FreeSql template did not generate '$requiredPath'." }
         }
         Assert-FileContains $freeSqlProgram 'AddFreeSqlPersistence'
         Assert-FileContains $freeSqlDevelopmentSettings '"AutoSyncStructure": true'
+        Assert-FileContains $mapperlyProject 'Riok.Mapperly'
+        Assert-FileContains $mapperlyController 'DemoMapper.ToResponse(status)'
         Invoke-Dotnet $freeSqlOutput @('restore', $freeSqlSolution, '--nologo')
         Assert-NoVulnerablePackages $freeSqlOutput $freeSqlSolution
-        $freeSqlAssets = Get-ChildItem -LiteralPath $freeSqlOutput -Filter project.assets.json -Recurse -File | Get-Content -Raw
-        foreach ($package in @('freesql/', 'freesql.extensions.baseentity/')) {
+        $freeSqlAssets = (Get-ChildItem -LiteralPath $freeSqlOutput -Filter project.assets.json -Recurse -File | Get-Content -Raw) -join "`n"
+        foreach ($package in @('freesql/', 'freesql.extensions.baseentity/', 'freesql.provider.mysqlconnector/', 'riok.mapperly/4.3.1')) {
             if ($freeSqlAssets -notmatch [regex]::Escape($package)) { throw "FreeSql generated project is missing '$package'." }
+        }
+        foreach ($package in @('freesql.provider.mysql/', 'mysql.data/')) {
+            if ($freeSqlAssets -match [regex]::Escape($package)) { throw "Generated project unexpectedly contains '$package'." }
         }
         Invoke-Dotnet $freeSqlOutput @('build', $freeSqlSolution, '-c', 'Release', '--no-restore', '--nologo', '-warnaserror')
         Invoke-Dotnet $freeSqlOutput @('test', $freeSqlSolution, '-c', 'Release', '--no-build', '--no-restore', '--nologo')

@@ -19,7 +19,7 @@ All templates are created from one package. The application and tool templates g
 This is a prerelease package, so install the exact version:
 
 ```powershell
-dotnet new install Guihua.Templates@1.0.0-beta.3
+dotnet new install Guihua.Templates@1.0.0-beta.4
 dotnet new list guihua
 ```
 
@@ -35,6 +35,18 @@ Create a project with the optional FreeSql persistence module, SQLite developmen
 
 ```powershell
 dotnet new guihua -n DeviceService -o .\DeviceService --persistence freesql
+```
+
+Create a project with Mapperly compile-time mapping and an API boundary mapping example:
+
+```powershell
+dotnet new guihua -n DeviceService -o .\DeviceService --mapping mapperly
+```
+
+The options compose when both capabilities are needed:
+
+```powershell
+dotnet new guihua -n DeviceService -o .\DeviceService --persistence freesql --mapping mapperly
 ```
 
 Or create a .NET 10 application:
@@ -53,7 +65,7 @@ dotnet test .\DeviceService.sln -c Release --no-build --no-restore
 dotnet run --project .\src\DeviceService.Api\DeviceService.Api.csproj
 ```
 
-The default generated application does not include FreeSql, Redis, JWT, WebSocket, MediatR, AutoMapper, NLog, RestSharp, or Refit. Selecting `--persistence freesql` explicitly includes FreeSql and its local SQLite development setup.
+The default generated application does not include FreeSql, Redis, JWT, WebSocket, MediatR, Mapperly, AutoMapper, NLog, RestSharp, or Refit. Selecting `--persistence freesql` explicitly includes FreeSql and its local SQLite development setup. Selecting `--mapping mapperly` includes only Mapperly's compile-time source generator and a typed mapping example; it adds no runtime reflection service.
 
 ## Add an explicit module
 

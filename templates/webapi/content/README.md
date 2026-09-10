@@ -22,6 +22,12 @@ dotnet run --project .\src\YOU.Api\YOU.Api.csproj
 dotnet new guihua -n MyService --persistence freesql
 ```
 
+选择编译期生成代码、无运行时反射的 Mapperly 对象映射：
+
+```powershell
+dotnet new guihua -n MyService --mapping mapperly
+```
+
 模板会同时选择匹配的 SDK 和条件包版本。需要切换大版本时，建议重新生成后迁移业务代码，或者同时审查 `global.json`、`Directory.Build.props` 和 `Directory.Packages.props`，不要只修改 csproj。
 
 ## API 合同
@@ -55,5 +61,6 @@ dotnet new guihua -n MyService --persistence freesql
 
 ## 可选模块
 
-FreeSql 可通过 `--persistence freesql` 在生成时显式带入；不选择时，默认生成物不包含数据库依赖。HostedService 和 typed HttpClient 仍需从 [Guihua Templates 仓库](https://github.com/WuXain/guihua-templates) 的 `modules/` 目录按模块 README 显式接入，因为它们需要具体的业务适配器或外部地址。
+FreeSql 可通过 `--persistence freesql` 在生成时显式带入；Mapperly 可通过 `--mapping mapperly` 显式带入，两者可以组合使用。未选择时，默认生成物不包含对应依赖。HostedService 和 typed HttpClient 仍需从 [Guihua Templates 仓库](https://github.com/WuXain/guihua-templates) 的 `modules/` 目录按模块 README 显式接入，因为它们需要具体的业务适配器或外部地址。
 __GUIHUA_FREESQL_README__
+__GUIHUA_MAPPERLY_README__

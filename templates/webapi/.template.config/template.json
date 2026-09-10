@@ -37,6 +37,20 @@
             "src/YOU.Api/appsettings.Development.json",
             "src/YOU.Core/Entities/PersistenceSample.cs"
           ]
+        },
+        {
+          "condition": "(mapping != 'mapperly')",
+          "exclude": [
+            "src/YOU.Api/Controllers/DemoController.Mapperly.cs",
+            "src/YOU.Api/Mapping/**",
+            "src/YOU.Api/Models/RuntimeStatusResponse.cs"
+          ]
+        },
+        {
+          "condition": "(mapping == 'mapperly')",
+          "exclude": [
+            "src/YOU.Api/Controllers/DemoController.cs"
+          ]
         }
       ]
     }
@@ -73,6 +87,23 @@
         {
           "choice": "freesql",
           "description": "Include FreeSql, SQLite development configuration, and a BaseEntity sample."
+        }
+      ],
+      "defaultValue": "none"
+    },
+    "mapping": {
+      "type": "parameter",
+      "datatype": "choice",
+      "displayName": "Object mapping",
+      "description": "Optional compile-time object mapping for API boundary models.",
+      "choices": [
+        {
+          "choice": "none",
+          "description": "No object-mapping dependency (default)."
+        },
+        {
+          "choice": "mapperly",
+          "description": "Include Mapperly and a compile-time generated API mapping example."
         }
       ],
       "defaultValue": "none"
@@ -271,6 +302,60 @@
           {
             "condition": "true",
             "value": "            \"FreeSql\","
+          }
+        ]
+      }
+    },
+    "mapperlyPackageReference": {
+      "type": "generated",
+      "generator": "switch",
+      "replaces": "__GUIHUA_MAPPERLY_PACKAGE_REFERENCE__",
+      "parameters": {
+        "evaluator": "C++",
+        "cases": [
+          {
+            "condition": "(mapping == 'mapperly')",
+            "value": "    <PackageReference Include=\"Riok.Mapperly\" PrivateAssets=\"all\" />"
+          },
+          {
+            "condition": "true",
+            "value": ""
+          }
+        ]
+      }
+    },
+    "mapperlyCentralPackageVersion": {
+      "type": "generated",
+      "generator": "switch",
+      "replaces": "__GUIHUA_MAPPERLY_CENTRAL_PACKAGE_VERSION__",
+      "parameters": {
+        "evaluator": "C++",
+        "cases": [
+          {
+            "condition": "(mapping == 'mapperly')",
+            "value": "    <PackageVersion Include=\"Riok.Mapperly\" Version=\"4.3.1\" />"
+          },
+          {
+            "condition": "true",
+            "value": ""
+          }
+        ]
+      }
+    },
+    "mapperlyReadme": {
+      "type": "generated",
+      "generator": "switch",
+      "replaces": "__GUIHUA_MAPPERLY_README__",
+      "parameters": {
+        "evaluator": "C++",
+        "cases": [
+          {
+            "condition": "(mapping == 'mapperly')",
+            "value": "\n## Mapperly object mapping\n\nThis project was generated with `--mapping mapperly`. `DemoMapper` demonstrates compile-time mapping from a Core model to an API response DTO. Add mappings as partial methods under `src/YOU.Api/Mapping`; Mapperly generates their implementations during compilation without runtime reflection.\n"
+          },
+          {
+            "condition": "true",
+            "value": ""
           }
         ]
       }

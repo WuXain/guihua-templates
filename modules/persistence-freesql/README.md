@@ -1,6 +1,6 @@
 # Guihua FreeSql Persistence Module
 
-This module is an explicit compile-time integration for the generated YOU host. It supports SQLite and MySQL and defaults to SQLite in the sample configuration.
+This module is an explicit compile-time integration for the generated YOU host. It supports SQLite and MySQL through `FreeSql.Provider.MySqlConnector`, and defaults to SQLite in the sample configuration.
 
 When the host is created with `dotnet new guihua --persistence freesql`, this module is already generated under `src/Modules`, added to the solution, referenced by the API project, and registered from `Program.cs`. The manual steps below are for adding the module to an existing project.
 
@@ -53,6 +53,6 @@ public sealed class ProductEntity : BaseEntity<ProductEntity, long>
 
 The base class supplies `Id`, `CreateTime`, `UpdateTime`, `IsDeleted`, and `Sort`, along with Active Record CRUD methods. Pass every assembly containing such entities to `AddFreeSqlPersistence`; when `AutoSyncStructure` is `true`, the module initializes FreeSql at host startup and synchronizes only its own sample entity plus those explicitly supplied entity types.
 
-Set `Provider` to `MySql` and use a MySQL connection string when deploying against MySQL. `AutoSyncStructure` is off by default; enabling it logs a warning and should be an intentional development or migration decision. SQLite creates its database file during synchronization; provision a MySQL database separately and let the application synchronize its tables.
+Set `Provider` to `MySql` and use a MySqlConnector-compatible connection string when deploying against MySQL. `AutoSyncStructure` is off by default; enabling it logs a warning and should be an intentional development or migration decision. SQLite creates its database file during synchronization; provision a MySQL database separately and let the application synchronize its tables.
 
 The module does not scan assemblies and does not rewrite `Program.cs`. Add the project reference, the single registration call, and configuration explicitly.

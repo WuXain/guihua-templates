@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <PackageReference Include="Swashbuckle.AspNetCore" />
+__GUIHUA_MAPPERLY_PACKAGE_REFERENCE__
   </ItemGroup>
 
   <ItemGroup>
