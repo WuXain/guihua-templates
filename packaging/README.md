@@ -19,7 +19,7 @@ All templates are created from one package. The application and tool templates g
 This is a prerelease package, so install the exact version:
 
 ```powershell
-dotnet new install Guihua.Templates@1.0.0-beta.4
+dotnet new install Guihua.Templates@1.0.0-beta.5
 dotnet new list guihua
 ```
 
@@ -30,6 +30,8 @@ Create the default .NET 8 application:
 ```powershell
 dotnet new guihua -n DeviceService -o .\DeviceService
 ```
+
+Generated API routes begin with the project name. For this example, the greeting endpoint is `/DeviceService/demo/greeting`, so services have distinct route prefixes at a shared gateway.
 
 Create a project with the optional FreeSql persistence module, SQLite development configuration, and a `BaseEntity` sample:
 

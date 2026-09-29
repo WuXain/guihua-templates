@@ -9,7 +9,7 @@ namespace YOU.Api.Controllers;
 /// <summary>
 /// 模板提供的接口文档、统一响应与 Mapperly 映射示例。
 /// </summary>
-[Route("api/demo")]
+[Route("YOU/demo")]
 public sealed class DemoController : BaseController
 {
     private readonly GetRuntimeStatusUseCase _getRuntimeStatus;

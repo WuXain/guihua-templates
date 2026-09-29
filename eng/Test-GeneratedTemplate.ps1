@@ -176,7 +176,7 @@ function Get-LoopbackPort {
 }
 
 function Wait-Api {
-    param([Diagnostics.Process] $Process, [string] $Address)
+    param([Diagnostics.Process] $Process, [string] $Address, [string] $ServiceName)
     $client = [Net.Http.HttpClient]::new()
     $client.Timeout = [TimeSpan]::FromSeconds(2)
     try {
@@ -184,14 +184,14 @@ function Wait-Api {
         while ([DateTime]::UtcNow -lt $deadline) {
             if ($Process.HasExited) { throw "Generated API exited before readiness (code $($Process.ExitCode))." }
             try {
-                $response = $client.GetAsync("$Address/api/demo/greeting").GetAwaiter().GetResult()
+                $response = $client.GetAsync("$Address/$ServiceName/demo/greeting").GetAwaiter().GetResult()
                 $body = $response.Content.ReadAsStringAsync().GetAwaiter().GetResult()
                 if ([int]$response.StatusCode -ne 200 -or $body -notmatch '"code"\s*:\s*200') {
                     throw "Unexpected API response: $body"
                 }
                 $openApi = $client.GetAsync("$Address/swagger/v1/swagger.json").GetAwaiter().GetResult()
                 if ([int]$openApi.StatusCode -ne 200) { throw 'OpenAPI endpoint did not return HTTP 200 in Development.' }
-                $unknown = $client.GetAsync("$Address/api/not-found").GetAwaiter().GetResult()
+                $unknown = $client.GetAsync("$Address/$ServiceName/not-found").GetAwaiter().GetResult()
                 if ([int]$unknown.StatusCode -ne 404) { throw 'Unknown route did not preserve HTTP 404.' }
                 return
             }
@@ -279,7 +279,7 @@ try {
             $process = Start-Process @startParameters
         }
         finally { $env:ASPNETCORE_ENVIRONMENT = $oldEnvironment }
-        try { Wait-Api $process $address }
+        try { Wait-Api $process $address $sampleName }
         finally {
             if (-not $process.HasExited) { $process.Kill($true) }
             $process.WaitForExit()
@@ -338,7 +338,7 @@ try {
         }
         finally { $env:ASPNETCORE_ENVIRONMENT = $oldEnvironment }
         try {
-            Wait-Api $freeSqlProcess $freeSqlAddress
+            Wait-Api $freeSqlProcess $freeSqlAddress $freeSqlName
             $freeSqlDatabase = Join-Path (Split-Path -Parent $freeSqlApiProject) 'app.db'
             if (-not (Test-Path -LiteralPath $freeSqlDatabase -PathType Leaf)) {
                 throw 'FreeSql Development startup did not create app.db.'

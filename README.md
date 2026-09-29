@@ -25,7 +25,7 @@
 公开试用版发布到 NuGet 后，可安装指定版本：
 
 ```powershell
-dotnet new install Guihua.Templates@1.0.0-beta.4
+dotnet new install Guihua.Templates@1.0.0-beta.5
 dotnet new list guihua
 ```
 
@@ -81,7 +81,7 @@ dotnet test .\Guihua.Template.sln -c Release --no-build --no-restore
 
 ## 版本状态
 
-`1.0.0-beta.1` 是迁移到 GitHub 后的首个公开试用版本；`1.0.0-beta.2` 补齐了 Web API 模板的 Development Swagger UI 启动配置；`1.0.0-beta.3` 增加可选的 FreeSql BaseEntity / SQLite 持久化路径和 Swagger XML 注释；`1.0.0-beta.4` 将 MySQL 驱动切换为 MySqlConnector，并增加可选的 Mapperly 编译期映射。试用稳定后再发布 `1.0.0`，NuGet 包发布与 GitHub 源码版本保持一致。
+`1.0.0-beta.1` 是迁移到 GitHub 后的首个公开试用版本；`1.0.0-beta.2` 补齐了 Web API 模板的 Development Swagger UI 启动配置；`1.0.0-beta.3` 增加可选的 FreeSql BaseEntity / SQLite 持久化路径和 Swagger XML 注释；`1.0.0-beta.4` 将 MySQL 驱动切换为 MySqlConnector，并增加可选的 Mapperly 编译期映射；`1.0.0-beta.5` 将生成的 Web API 路由前缀改为项目名，方便多个服务共用网关。试用稳定后再发布 `1.0.0`，NuGet 包发布与 GitHub 源码版本保持一致。
 
 ## License
 

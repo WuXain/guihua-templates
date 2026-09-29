@@ -219,12 +219,12 @@ public sealed class TemplatePackageTests
 
                 try
                 {
-                    using var response = client.GetAsync($"{address}/api/demo/greeting").GetAwaiter().GetResult();
+                    using var response = client.GetAsync($"{address}/{sampleName}/demo/greeting").GetAwaiter().GetResult();
                     var body = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
                     Assert.Equal(HttpStatusCode.OK, response.StatusCode);
                     Assert.Contains("\"code\":200", body, StringComparison.Ordinal);
 
-                    using var runtimeResponse = client.GetAsync($"{address}/api/demo/runtime-status").GetAwaiter().GetResult();
+                    using var runtimeResponse = client.GetAsync($"{address}/{sampleName}/demo/runtime-status").GetAwaiter().GetResult();
                     var runtimeBody = runtimeResponse.Content.ReadAsStringAsync().GetAwaiter().GetResult();
                     Assert.Equal(HttpStatusCode.OK, runtimeResponse.StatusCode);
                     Assert.Contains("\"state\":\"Ready\"", runtimeBody, StringComparison.Ordinal);

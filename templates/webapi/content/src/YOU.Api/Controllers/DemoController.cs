@@ -8,7 +8,7 @@ namespace YOU.Api.Controllers;
 /// <summary>
 /// 模板提供的接口文档与统一响应示例。
 /// </summary>
-[Route("api/demo")]
+[Route("YOU/demo")]
 public sealed class DemoController : BaseController
 {
     private readonly GetRuntimeStatusUseCase _getRuntimeStatus;

@@ -4,7 +4,7 @@
     <IsPackable>true</IsPackable>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <PackageId>Guihua.Templates</PackageId>
-    <Version>1.0.0-beta.4</Version>
+    <Version>1.0.0-beta.5</Version>
     <Title>YOU / Guihua .NET Web API Templates</Title>
     <PackageType>Template</PackageType>
     <Authors>Charles.Yu</Authors>
@@ -13,7 +13,7 @@
     <PackageTags>dotnet-new;template;webapi;aspnetcore;net8;net10;modular;tooling</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageReleaseNotes>Replaces FreeSql.Provider.MySql with the MIT-licensed MySqlConnector provider and adds the optional --mapping mapperly compile-time mapping profile. The default template remains mapping- and persistence-free; both options can be combined on net8.0 and net10.0.</PackageReleaseNotes>
+    <PackageReleaseNotes>Prefixes generated Web API routes with the project name, so multiple services can use distinct paths behind a shared gateway. Updates the default and Mapperly profiles, API contract tests, and package validation for net8.0 and net10.0.</PackageReleaseNotes>
     <PackageProjectUrl>https://github.com/WuXain/guihua-templates</PackageProjectUrl>
     <RepositoryUrl>https://github.com/WuXain/guihua-templates.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>

@@ -32,6 +32,8 @@ dotnet new guihua -n MyService --mapping mapperly
 
 ## API 合同
 
+API 路由以生成时的项目名开头。例如执行 `dotnet new guihua -n DeviceService` 后，问候接口是 `/DeviceService/demo/greeting`；多个服务共用网关时，可用各自的项目前缀区分路由。生成后若重命名项目，需要同步调整路由和调用方。
+
 普通业务结果使用 HTTP 200，JSON 中的数值 `code` 表示应用结果：
 
 ```json

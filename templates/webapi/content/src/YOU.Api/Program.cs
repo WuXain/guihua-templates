@@ -87,7 +87,7 @@ if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Testing"))
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-    app.MapGet("/api/demo/exception", () =>
+    app.MapGet("/YOU/demo/exception", () =>
         ThrowDemoException());
 }
 

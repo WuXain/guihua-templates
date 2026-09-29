@@ -17,10 +17,13 @@ public sealed class ApiContractTests : IClassFixture<ApiContractFactory>
         _client = factory.CreateClient();
     }
 
+    /// <summary>
+    /// 验证项目前缀下的问候接口返回统一成功结果。
+    /// </summary>
     [Fact]
     public async Task Success_is_http_200_with_numeric_success_code_and_result()
     {
-        using var response = await _client.GetAsync("/api/demo/greeting");
+        using var response = await _client.GetAsync("/YOU/demo/greeting");
         using var body = await ReadBody(response);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -32,10 +35,13 @@ public sealed class ApiContractTests : IClassFixture<ApiContractFactory>
         Assert.False(string.IsNullOrWhiteSpace(body.RootElement.GetProperty("traceId").GetString()));
     }
 
+    /// <summary>
+    /// 验证运行状态接口在项目前缀下调用核心用例。
+    /// </summary>
     [Fact]
     public async Task Runtime_status_exercises_the_core_use_case_through_the_api()
     {
-        using var response = await _client.GetAsync("/api/demo/runtime-status");
+        using var response = await _client.GetAsync("/YOU/demo/runtime-status");
         using var body = await ReadBody(response);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -45,10 +51,13 @@ public sealed class ApiContractTests : IClassFixture<ApiContractFactory>
         Assert.Equal(JsonValueKind.String, body.RootElement.GetProperty("result").GetProperty("observedAtUtc").ValueKind);
     }
 
+    /// <summary>
+    /// 验证项目前缀下的业务失败仍使用数值应用结果码。
+    /// </summary>
     [Fact]
     public async Task Business_failure_is_http_200_with_numeric_application_code()
     {
-        using var response = await _client.GetAsync("/api/demo/not-found");
+        using var response = await _client.GetAsync("/YOU/demo/not-found");
         using var body = await ReadBody(response);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -56,10 +65,13 @@ public sealed class ApiContractTests : IClassFixture<ApiContractFactory>
         Assert.Equal(404, body.RootElement.GetProperty("code").GetInt32());
     }
 
+    /// <summary>
+    /// 验证项目前缀下的请求模型校验响应。
+    /// </summary>
     [Fact]
     public async Task Model_validation_is_http_200_with_field_errors()
     {
-        using var response = await _client.PostAsJsonAsync("/api/demo/echo", new { });
+        using var response = await _client.PostAsJsonAsync("/YOU/demo/echo", new { });
         using var body = await ReadBody(response);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -70,10 +82,13 @@ public sealed class ApiContractTests : IClassFixture<ApiContractFactory>
             error => string.Equals(error.Name, nameof(DemoEchoRequest.Message), StringComparison.OrdinalIgnoreCase));
     }
 
+    /// <summary>
+    /// 验证项目前缀下的异常示例不会泄露服务端异常信息。
+    /// </summary>
     [Fact]
     public async Task Unhandled_exception_is_safe_and_keeps_http_200_contract()
     {
-        using var response = await _client.GetAsync("/api/demo/exception");
+        using var response = await _client.GetAsync("/YOU/demo/exception");
         using var body = await ReadBody(response);
         var json = body.RootElement.GetRawText();
 
@@ -93,6 +108,20 @@ public sealed class ApiContractTests : IClassFixture<ApiContractFactory>
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
+    /// <summary>
+    /// 验证旧的通用 api 前缀不再暴露同名接口，避免网关路由冲突。
+    /// </summary>
+    [Fact]
+    public async Task Old_generic_api_prefix_is_not_registered()
+    {
+        using var response = await _client.GetAsync("/api/demo/greeting");
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    /// <summary>
+    /// 验证 OpenAPI 文档呈现生成项目专属的接口路径。
+    /// </summary>
     [Fact]
     public async Task OpenApi_json_describes_the_demo_controller()
     {
@@ -100,7 +129,7 @@ public sealed class ApiContractTests : IClassFixture<ApiContractFactory>
         var json = await response.Content.ReadAsStringAsync();
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Contains("/api/demo/greeting", json, StringComparison.Ordinal);
+        Assert.Contains("/YOU/demo/greeting", json, StringComparison.Ordinal);
         Assert.Contains("ApiResponse", json, StringComparison.Ordinal);
         Assert.Contains("获取一条问候信息", json, StringComparison.Ordinal);
         Assert.Contains("要由服务端原样返回的文本", json, StringComparison.Ordinal);
@@ -129,10 +158,13 @@ public sealed class ProductionApiTests : IClassFixture<ProductionApiFactory>
         _client = factory.CreateClient();
     }
 
+    /// <summary>
+    /// 验证开发环境专用的异常示例端点不会在生产环境注册。
+    /// </summary>
     [Fact]
     public async Task Demo_exception_route_is_not_registered_in_production()
     {
-        using var response = await _client.GetAsync("/api/demo/exception");
+        using var response = await _client.GetAsync("/YOU/demo/exception");
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
